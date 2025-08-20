@@ -1,0 +1,19 @@
+dataset: MNIST           # MNIST or CIFAR10
+data_dir: ./data
+num_clients: 10
+dirichlet_alpha: 0.3     # smaller => more non-IID
+clients_per_round: 5
+rounds: 50
+local_epochs: 1
+batch_size: 64
+test_batch_size: 256
+optimizer: adam
+lr_global: 0.001
+lr_inner: 0.01
+inner_steps: 1
+maml_meta_lr: 0.001
+eval_personalization_steps: 1
+dp_noise_std: 0.0        # e.g., 0.01 to enable basic DP noise on updates
+seed: 42
+use_gpu: true
+save_dir: ./outputs
