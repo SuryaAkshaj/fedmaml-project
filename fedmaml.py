@@ -31,17 +31,25 @@ def fedmaml_round(global_model, client_loaders, selected_idx, lr_inner=0.01, inn
         # reset to global
         apply_state(global_model, global_state)
 
-        # build two mini-batches (support, query)
+        # FIXED: Better data sampling to prevent exhaustion
         loader = client_loaders[i]
-        it = iter(loader)
-        try:
-            xs, ys = next(it)
-        except StopIteration:
+        
+        # Convert loader to list to avoid iterator exhaustion
+        data_batches = list(loader)
+        if len(data_batches) < 2:
+            # Skip clients with insufficient data
             continue
-        try:
-            xq, yq = next(it)
-        except StopIteration:
-            xq, yq = xs.clone(), ys.clone()
+            
+        # Use first batch as support, second as query
+        xs, ys = data_batches[0]
+        xq, yq = data_batches[1]
+        
+        # If we have more data, use additional batches for better evaluation
+        if len(data_batches) >= 3:
+            # Use third batch as additional query data
+            xq2, yq2 = data_batches[2]
+            xq = torch.cat([xq, xq2], dim=0)
+            yq = torch.cat([yq, yq2], dim=0)
 
         xs, ys = xs.to(device), ys.to(device)
         xq, yq = xq.to(device), yq.to(device)
@@ -51,7 +59,7 @@ def fedmaml_round(global_model, client_loaders, selected_idx, lr_inner=0.01, inn
         )
         loss_sum += float(q_loss.item())
 
-        # Accumulate
+        # Accumulate gradients
         for name, p in global_model.named_parameters():
             g = client_grads.get(name)
             if g is not None:

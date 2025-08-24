@@ -3,7 +3,7 @@ data_dir: ./data
 num_clients: 10
 dirichlet_alpha: 0.3     # smaller => more non-IID
 clients_per_round: 5
-rounds: 50
+rounds: 30
 local_epochs: 1
 batch_size: 64
 test_batch_size: 256
